@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NOBITA MD· WhatsApp Bot</title>
+    <style>
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: radial-gradient(ellipse at 20% 50%, rgba(0, 180, 255, 0.06) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 50%, rgba(180, 0, 255, 0.06) 0%, transparent 60%),
+                        #0a0a0f;
+            overflow-x: hidden;
+        }
+
+        /* ============================================================
+           ANIMATED GRADIENT BACKGROUND (ORB)
+           ============================================================ */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+            animation: orbFloat 20s ease-in-out infinite alternate;
+        }
+
+        .bg-orb--blue {
+            width: 600px;
+            height: 600px;
+            top: -200px;
+            left: -200px;
+            background: rgba(0, 150, 255, 0.10);
+            animation-delay: 0s;
+        }
+
+        .bg-orb--purple {
+            width: 500px;
+            height: 500px;
+            bottom: -150px;
+            right: -150px;
+            background: rgba(180, 0, 255, 0.10);
+            animation-delay: -5s;
+        }
+
+        .bg-orb--cyan {
+            width: 400px;
+            height: 400px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 255, 255, 0.04);
+            animation-delay: -10s;
+        }
+
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(80px, -60px) scale(1.1); }
+            66% { transform: translate(-60px, 80px) scale(0.9); }
+            100% { transform: translate(40px, 40px) scale(1.05); }
+        }
+
+        /* ============================================================
+           MAIN CARD (GLASSMORPHISM)
+           ============================================================ */
+        .glass-card {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            width: 100%;
+            padding: 48px 40px 40px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6),
+                        0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            animation: cardIn 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px) scale(0.97);
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 60px 160px rgba(0, 0, 0, 0.7),
+                        0 0 0 1px rgba(0, 180, 255, 0.08) inset;
+            transform: translateY(-2px);
+        }
+
+        @keyframes cardIn {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ============================================================
+           GLOW BORDER (subtle animated ring)
+           ============================================================ */
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 40px;
+            padding: 1px;
+            background: conic-gradient(from 0deg, 
+                transparent, 
+                rgba(0, 180, 255, 0.15), 
+                rgba(180, 0, 255, 0.15), 
+                rgba(0, 180, 255, 0.10), 
+                transparent
+            );
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            animation: borderGlow 12s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ============================================================
+           LOGO
+           ============================================================ */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            font-size: 2.6rem;
+            line-height: 1;
+            filter: drop-shadow(0 0 30px rgba(0, 180, 255, 0.2));
+            animation: floatIcon 6s ease-in-out infinite;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+
+        .logo-text {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 30%, #60b0ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 60px rgba(0, 150, 255, 0.10);
+        }
+
+        .logo-sub {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: -4px;
+            padding-left: 4px;
+        }
+
+        /* ============================================================
+           DIVIDER
+           ============================================================ */
+        .divider {
+            width: 60px;
+            height: 3px;
+            margin: 20px 0 24px;
+            background: linear-gradient(90deg, rgba(0, 180, 255, 0.4), rgba(180, 0, 255, 0.4));
+            border-radius: 4px;
+        }
+
+        /* ============================================================
+           STATUS BADGE
+           ============================================================ */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 24px 10px 20px;
+            border-radius: 60px;
+            background: rgba(0, 255, 180, 0.05);
+            border: 1px solid rgba(0, 255, 180, 0.12);
+            margin-bottom: 28px;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .status-badge:hover {
+            background: rgba(0, 255, 180, 0.08);
+            border-color: rgba(0, 255, 180, 0.20);
+            box-shadow: 0 0 40px rgba(0, 255, 180, 0.04);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4), 0 0 60px rgba(0, 255, 136, 0.08);
+            animation: pulseDot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.85); }
+        }
+
+        .status-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #ccfff0;
+        }
+
+        .status-text strong {
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        /* ============================================================
+           INFO GRID
+           ============================================================ */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 28px 0 32px;
+        }
+
+        .info-item {
+            padding: 18px 20px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: default;
+        }
+
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-icon {
+            font-size: 1.4rem;
+            line-height: 1;
+            width: 36px;
+            text-align: center;
+            filter: drop-shadow(0 0 12px rgba(0, 180, 255, 0.10));
+        }
+
+        .info-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.25);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #f0f4ff;
+            margin-top: 1px;
+        }
+
+        .info-value .highlight {
+            color: #60d0ff;
+        }
+
+        .info-value .highlight-purple {
+            color: #b080ff;
+        }
+
+        .info-value .highlight-green {
+            color: #60ffa0;
+        }
+
+        /* ============================================================
+           SECONDARY CTA / TAGLINE
+           ============================================================ */
+        .tagline {
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 1px;
+            padding: 8px 0 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            margin-top: 8px;
+        }
+
+        .tagline span {
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 500;
+        }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        .footer {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.15);
+            letter-spacing: 0.5px;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-brand strong {
+            color: rgba(255, 255, 255, 0.25);
+            font-weight: 600;
+        }
+
+        .footer-brand i {
+            font-style: normal;
+            color: rgba(0, 180, 255, 0.2);
+        }
+
+        .footer-year {
+            color: rgba(255, 255, 255, 0.10);
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 600px) {
+            .glass-card {
+                padding: 32px 20px 28px;
+                border-radius: 28px;
+            }
+
+            .logo-text {
+                font-size: 1.6rem;
+            }
+
+            .logo-icon {
+                font-size: 2rem;
+            }
+
+            .logo-sub {
+                font-size: 0.7rem;
+            }
+
+            .status-badge {
+                padding: 8px 18px 8px 14px;
+                margin-bottom: 20px;
+            }
+
+            .status-text {
+                font-size: 0.9rem;
+            }
+
+            .status-dot {
+                width: 10px;
+                height: 10px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                margin: 20px 0 24px;
+            }
+
+            .info-item {
+                padding: 14px 16px;
+            }
+
+            .info-value {
+                font-size: 0.85rem;
+            }
+
+            .footer {
+                flex-direction: column;
+                text-align: center;
+                gap: 6px;
+                font-size: 0.7rem;
+            }
+
+            .bg-orb--blue {
+                width: 300px;
+                height: 300px;
+                top: -100px;
+                left: -100px;
+            }
+
+            .bg-orb--purple {
+                width: 250px;
+                height: 250px;
+                bottom: -80px;
+                right: -80px;
+            }
+
+            .bg-orb--cyan {
+                width: 200px;
+                height: 200px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .glass-card {
+                padding: 24px 16px 20px;
+                border-radius: 24px;
+            }
+
+            .logo-text {
+                font-size: 1.3rem;
+            }
+
+            .status-text {
+                font-size: 0.8rem;
+            }
+
+            .info-item {
+                padding: 12px 14px;
+            }
+        }
+
+        /* ============================================================
+           EXTRA : FLOATING GLOW PARTICLES (pure CSS)
+           ============================================================ */
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(circle, rgba(0, 180, 255, 0.06), transparent 70%);
+            animation: particleFloat 30s linear infinite alternate;
+        }
+
+        .particle--1 {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 5%;
+            animation-duration: 35s;
+        }
+
+        .particle--2 {
+            width: 150px;
+            height: 150px;
+            bottom: 15%;
+            right: 5%;
+            background: radial-gradient(circle, rgba(180, 0, 255, 0.05), transparent 70%);
+            animation-duration: 28s;
+            animation-delay: -8s;
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(60px, -40px) scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== BACKGROUND ORBS ===== -->
+    <div class="bg-orb bg-orb--blue"></div>
+    <div class="bg-orb bg-orb--purple"></div>
+    <div class="bg-orb bg-orb--cyan"></div>
+    <div class="particle particle--1"></div>
+    <div class="particle particle--2"></div>
+
+    <!-- ===== MAIN GLASS CARD ===== -->
+    <main class="glass-card">
+
+        <!-- ===== LOGO ===== -->
+        <div class="logo">
+            <span class="logo-icon">🚀</span>
+            <span class="logo-text">COPYCAT MD</span>
+        </div>
+        <div class="logo-sub">Private Multi Device WhatsApp Bot</div>
+
+        <div class="divider"></div>
+
+        <!-- ===== STATUS BADGE ===== -->
+        <div class="status-badge">
+            <span class="status-dot"></span>
+            <span class="status-text"><strong>SERVER ONLINE</strong> &amp; READY</span>
+        </div>
+
+        <!-- ===== INFO GRID ===== -->
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-icon">⚡</span>
+                <div class="info-content">
+                    <span class="info-label">Server Status</span>
+                    <span class="info-value"><span class="highlight-green">● Active</span></span>
+                </div>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">🤖</span>
+                <div class="info-content">
+                    <span class="info-label">Bot System</span>
+                    <span class="info-value"><span class="highlight">Running</span></span>
+                </div>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">🔧</span>
+                <div class="info-content">
+                    <span class="info-label">Anti Sleep</span>
+                    <span class="info-value"><span class="highlight-green">Enabled</span></span>
+                </div>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">🛡️</span>
+                <div class="info-content">
+                    <span class="info-label">Security</span>
+                    <span class="info-value"><span class="highlight-purple">Protected</span></span>
+                </div>
+            </div>
+            <div class="info-item" style="grid-column: 1 / -1;">
+                <span class="info-icon">🚀</span>
+                <div class="info-content">
+                    <span class="info-label">Performance</span>
+                    <span class="info-value"><span class="highlight">Optimized</span> <span style="font-size:0.7rem;color:rgba(255,255,255,0.15);margin-left:8px;">· 99.9% uptime</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAGLINE ===== -->
+        <div class="tagline">
+            <span>✦</span>  always on · always ready  <span>✦</span>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="footer">
+            <div class="footer-brand">
+                <i>⚡</i> Powered By <strong>COPYCAT MD</strong>
+            </div>
+            <span class="footer-year">© 2026</span>
+        </footer>
+
+    </main>
+
+    <!-- ============================================================
+    SMALL JAVASCRIPT (no dependencies)
+    ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ===== Smooth entrance: ensure card is visible even if CSS animation fails =====
+            const card = document.querySelector('.glass-card');
+            if (card) {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0) scale(1)';
+            }
+
+            // ===== Optional: subtle live clock in footer (just for polish) =====
+            const footerYear = document.querySelector('.footer-year');
+            if (footerYear) {
+                const now = new Date();
+                const year = now.getFullYear();
+                if (year !== 2026) {
+                    footerYear.textContent = '© ' + year;
+                }
+            }
+
+            // ===== Console greeting (premium feel) =====
+            console.log('🚀 COPYCAT MD · WhatsApp Bot Server');
+            console.log('🟢 Status: ONLINE & READY');
+            console.log('⚡ Performance: Optimized · 99.9% uptime');
+
+            // ===== Small interaction: status badge pulse on click =====
+            const badge = document.querySelector('.status-badge');
+            if (badge) {
+                badge.addEventListener('click', function() {
+                    const dot = this.querySelector('.status-dot');
+                    if (dot) {
+                        dot.style.animation = 'none';
+                        void dot.offsetHeight; // force reflow
+                        dot.style.animation = 'pulseDot 2s ease-in-out infinite';
+                    }
+                    // subtle haptic feedback via style
+                    this.style.transition = 'transform 0.1s ease';
+                    this.style.transform = 'scale(0.97)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 120);
+                });
+            }
+
+            // ===== Hover glow effect on info items (enhanced) =====
+            const items = document.querySelectorAll('.info-item');
+            items.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    const icon = this.querySelector('.info-icon');
+                    if (icon) {
+                        icon.style.transition = 'transform 0.3s ease';
+                        icon.style.transform = 'scale(1.2)';
+                    }
+                });
+                item.addEventListener('mouseleave', function() {
+                    const icon = this.querySelector('.info-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1)';
+                    }
+                });
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
